@@ -8,7 +8,6 @@
 #include <ctype.h>
 #include "token.h"
 
-// TODO:GK1
 struct {
   char string[MAX_IDENT_LEN + 1];
   TokenType tokenType;
@@ -19,8 +18,8 @@ struct {
   {"VAR", KW_VAR},
   {"INTEGER", KW_INTEGER},
   {"CHAR", KW_CHAR},
-  {"STRING", KW_STRING},    // GK1: Thêm 2 keyword mới vào bảng keyword
-  {"DOUBLE", KW_DOUBLE},    // GK1: Thêm 2 keyword mới vào bảng keyword
+  {"DOUBLE", KW_DOUBLE},            // TODO:3x
+  {"STRING", KW_STRING},            // TODO:3x
   {"ARRAY", KW_ARRAY},
   {"OF", KW_OF},
   {"FUNCTION", KW_FUNCTION},
@@ -35,11 +34,10 @@ struct {
   {"DO", KW_DO},
   {"FOR", KW_FOR},
   {"TO", KW_TO},
-  {"SWITCH", KW_SWITCH},
+  {"SWITCH", KW_SWITCH},   //todo:2
   {"CASE", KW_CASE},
   {"BREAK", KW_BREAK},
   {"DEFAULT", KW_DEFAULT},
-
 };
 
 int keywordEq(char *kw, char *string) {
@@ -66,24 +64,24 @@ Token* makeToken(TokenType tokenType, int lineNo, int colNo) {
   return token;
 }
 
-// TODO:GK1
 char *tokenToString(TokenType tokenType) {
   switch (tokenType) {
   case TK_NONE: return "None";
   case TK_IDENT: return "an identification";
   case TK_NUMBER: return "a number";
   case TK_CHAR: return "a constant char";
-  case TK_STRING: return "a string";          // GK1: Bổ sung case cho 4 Token vừa thêm vào
-  case TK_DOUBLE: return "a double number";   // GK1: Bổ sung case cho 4 Token vừa thêm vào
+  case TK_DOUBLE: return "a floating point number";     // TODO:3x
+  case TK_STRING: return "a constant string";           // TODO:3x
   case TK_EOF: return "end of file";
+
   case KW_PROGRAM: return "keyword PROGRAM";
   case KW_CONST: return "keyword CONST";
   case KW_TYPE: return "keyword TYPE";
   case KW_VAR: return "keyword VAR";
   case KW_INTEGER: return "keyword INTEGER";
-  case KW_STRING: return "keyword STRING";    // GK1: Bổ sung case cho 4 Token vừa thêm vào
-  case KW_DOUBLE: return "keyword DOUBLE";    // GK1: Bổ sung case cho 4 Token vừa thêm vào
-  case KW_CHAR: return "keyword CHAR";
+  case KW_CHAR: return "keyword CHAR";  
+  case KW_DOUBLE: return "keyword DOUBLE";            // TODO:3x
+  case KW_STRING: return "keyword STRING";                  // TODO:3x
   case KW_ARRAY: return "keyword ARRAY";
   case KW_OF: return "keyword OF";
   case KW_FUNCTION: return "keyword FUNCTION";
@@ -98,10 +96,11 @@ char *tokenToString(TokenType tokenType) {
   case KW_DO: return "keyword DO";
   case KW_FOR: return "keyword FOR";
   case KW_TO: return "keyword TO";
-case KW_SWITCH: return "keyword SWITCH";
-case KW_CASE: return "keyword CASE";
-case KW_DEFAULT: return "keyword DEFAULT";
-case KW_BREAK: return "keyword BREAK";
+  case KW_SWITCH: return "keyword SWITCH"; //todo:2
+  case KW_CASE: return "keyword CASE";
+  case KW_DEFAULT: return "keyword DEFAULT";
+  case KW_BREAK: return "keyword BREAK";
+
   case SB_SEMICOLON: return "\';\'";
   case SB_COLON: return "\':\'";
   case SB_PERIOD: return "\'.\'";
@@ -121,7 +120,8 @@ case KW_BREAK: return "keyword BREAK";
   case SB_RPAR: return "\')\'";
   case SB_LSEL: return "\'(.\'";
   case SB_RSEL: return "\'.)\'";
-  case SB_EXP: return "\'**\'";
+  case SB_EXP: return "\'**\'";         // TODO:1
+
   default: return "";
   }
 }

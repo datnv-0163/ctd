@@ -7,20 +7,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "error.h"
-// Sủa lại do bổ sung thêm 2 ERROR bai1 + 1 ERROR bai 3
-#define NUM_OF_ERRORS 31
+
+#define NUM_OF_ERRORS 30        // TODO:3x
 
 struct ErrorMessage {
   ErrorCode errorCode;
   char *message;
 };
 
-// TODO:GK1
-// TODO:GK3
-struct ErrorMessage errors[31] = {
+struct ErrorMessage errors[NUM_OF_ERRORS] = {
   {ERR_END_OF_COMMENT, "End of comment expected."},
   {ERR_IDENT_TOO_LONG, "Identifier too long."},
-  {ERR_INVALID_CONSTANT_CHAR, "Invalid char constant or string."}, // GK1: Sửa lại lỗi định nghĩa
+  {ERR_INVALID_CONSTANT_CHAR, "Invalid char constant."},
   {ERR_INVALID_SYMBOL, "Invalid symbol."},
   {ERR_INVALID_IDENT, "An identifier expected."},
   {ERR_INVALID_CONSTANT, "A constant expected."},
@@ -39,7 +37,7 @@ struct ErrorMessage errors[31] = {
   {ERR_INVALID_ARGUMENTS, "Wrong arguments."},
   {ERR_UNDECLARED_IDENT, "Undeclared identifier."},
   {ERR_UNDECLARED_CONSTANT, "Undeclared constant."},
-  {ERR_UNDECLARED_INT_CONSTANT, "Undeclared integer constant or double constant."},   // GK1 : Sửa lại lỗi định nghĩa
+  {ERR_UNDECLARED_INT_CONSTANT, "Undeclared integer constant."},
   {ERR_UNDECLARED_TYPE, "Undeclared type."},
   {ERR_UNDECLARED_VARIABLE, "Undeclared variable."},
   {ERR_UNDECLARED_FUNCTION, "Undeclared function."},
@@ -47,8 +45,7 @@ struct ErrorMessage errors[31] = {
   {ERR_DUPLICATE_IDENT, "Duplicate identifier."},
   {ERR_TYPE_INCONSISTENCY, "Type inconsistency"},
   {ERR_PARAMETERS_ARGUMENTS_INCONSISTENCY, "The number of arguments and the number of parameters are inconsistent."},
-  {ERR_INVALID_DOUBLE, "A double number excepted."},   // GK1: Them truong hợp double lỗi.
-  {ERR_ASSIGN_MULTI_VAR, "Assignment multiple variable has error"}
+  {ERR_INVALID_DOUBLE, "A floating point expected."}          // TODO:3x
 };
 
 void error(ErrorCode err, int lineNo, int colNo) {

@@ -10,7 +10,8 @@
 
 void scan(void);
 void eat(TokenType tokenType);
-void compileSwitchSt(void);
+
+void compileSwitchSt(void);  //todo:2
 void compileProgram(void);
 void compileBlock(void);
 void compileBlock2(void);
@@ -43,8 +44,6 @@ void compileIfSt(void);
 void compileElseSt(void);
 void compileWhileSt(void);
 void compileForSt(void);
-// TODO:GK2
-void compileDoWhileSt(void);        // GK2 : them truong hop do while
 void compileArgument(Object* param);
 void compileArguments(ObjectNode* paramList);
 void compileCondition(void);
@@ -55,10 +54,6 @@ Type* compileTerm(void);
 void compileTerm2(void);
 Type* compileFactor(void);
 Type* compileIndexes(Type* arrayType);
-
-//TODO:GK3
-TypeNode* compileListLVars();
-TypeNode* compileListRExps();
 
 int compile(char *fileName);
 

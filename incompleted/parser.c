@@ -12,18 +12,14 @@
 #include "semantics.h"
 #include "error.h"
 #include "debug.h"
-//TODO:GK3
-#include "symtab.h"
 
-Token *currentToken;        // Token hien tai dang xu ly
-Token *lookAhead;            // Token tiep theo se xu ly
+Token *currentToken;
+Token *lookAhead;
 
 extern Type* intType;
 extern Type* charType;
-// TODO::GK1
-extern Type* stringType;    // GK1: extern từ file semantics.c
-extern Type* doubleType;    // GK1: extern từ file semantics.c
-
+extern Type* doubleType;           // TODO:3x
+extern Type* stringType;           // TODO:3x
 extern SymTab* symtab;
 
 void scan(void) {
@@ -37,47 +33,6 @@ void eat(TokenType tokenType) {
   if (lookAhead->tokenType == tokenType) {
     scan();
   } else missingToken(tokenType, lookAhead->lineNo, lookAhead->colNo);
-}
-void compileSwitchSt(void){
-  eat(KW_SWITCH);
-  compileExpression();
-  eat(KW_BEGIN);
-  while(lookAhead->tokenType != KW_END) {
-   
-    switch(lookAhead->tokenType) {
-      case KW_CASE:
-        eat(KW_CASE);
-        switch (lookAhead->tokenType) {
-          case TK_NUMBER:
-            eat(TK_NUMBER);
-            break;
-          case TK_CHAR:
-            eat(TK_CHAR);
-            break;
-          default:
-            error(ERR_INVALID_CONSTANT, lookAhead->lineNo, lookAhead->colNo);
-        }
- 
-        eat(SB_COLON);
-        compileStatements();
-        if(lookAhead->tokenType == KW_BREAK) {
-          eat(KW_BREAK);  
-        }  
-        break;
-      case KW_DEFAULT:
-          printf("DDDEE\n");
-          eat(KW_DEFAULT);
-          eat(SB_COLON);
-          compileStatements();
-          break;
-      default: 
-        
-        error(ERR_INVALID_STATEMENT, lookAhead->lineNo, lookAhead->colNo);
-        break;
-    }
-
-  }
-  eat(KW_END);
 }
 
 void compileProgram(void) {
@@ -115,6 +70,7 @@ void compileBlock(void) {
       
       constObj->constAttrs->value = constValue;
       declareObject(constObj);
+      
       eat(SB_SEMICOLON);
     } while (lookAhead->tokenType == TK_IDENT);
 
@@ -243,8 +199,7 @@ void compileProcDecl(void) {
   exitBlock();
 }
 
-// TODO:GK1
-ConstantValue* compileUnsignedConstant(void) {    // Xu ly them 2 kieu moi
+ConstantValue* compileUnsignedConstant(void) {
   ConstantValue* constValue;
   Object* obj;
 
@@ -252,27 +207,25 @@ ConstantValue* compileUnsignedConstant(void) {    // Xu ly them 2 kieu moi
     case TK_NUMBER:
       eat(TK_NUMBER);
       constValue = makeIntConstant(currentToken->value);
-      if (DEBUG == 1) printf("Line %d: Debug compileUnsignedConstant: type => %d // val => %d\n",currentToken->lineNo, constValue->type, constValue->intValue);
       break;
-    case TK_DOUBLE:
+    case TK_DOUBLE:                       // TODO:3x
       eat(TK_DOUBLE);
       constValue = makeDoubleConstant(currentToken->dvalue);
-      if (DEBUG == 1) printf("Line %d: Debug compileUnsignedConstant: type => %d // val => %f\n",currentToken->lineNo, constValue->type, constValue->doubleValue);
       break;
     case TK_IDENT:
       eat(TK_IDENT);
+
       obj = checkDeclaredConstant(currentToken->string);
       constValue = duplicateConstantValue(obj->constAttrs->value);
+
       break;
     case TK_CHAR:
       eat(TK_CHAR);
       constValue = makeCharConstant(currentToken->string[0]);
-      if (DEBUG == 1) printf("Line %d: Debug compileUnsignedConstant: type => %d // val => %c\n",currentToken->lineNo, constValue->type, constValue->charValue);
       break;
-    case TK_STRING:
+    case TK_STRING:                       // TODO:3x
       eat(TK_STRING);
       constValue = makeStringConstant(currentToken->string);
-      if (DEBUG == 1) printf("Line %d: Debug compileUnsignedConstant: type => %d // val => %s\n",currentToken->lineNo, constValue->type, constValue->stringValue);
       break;
     default:
       error(ERR_INVALID_CONSTANT, lookAhead->lineNo, lookAhead->colNo);
@@ -280,7 +233,7 @@ ConstantValue* compileUnsignedConstant(void) {    // Xu ly them 2 kieu moi
   }
   return constValue;
 }
-// TODO:GK1
+
 ConstantValue* compileConstant(void) {
   ConstantValue* constValue;
 
@@ -292,23 +245,19 @@ ConstantValue* compileConstant(void) {
     case SB_MINUS:
       eat(SB_MINUS);
       constValue = compileConstant2();
-      if( constValue->type == TP_INT){    // GK1: Check them kieu double
+      if (constValue->type == TP_INT) {           // TODO:3x
         constValue->intValue = - constValue->intValue;
-        if (DEBUG == 1) printf("Line %d: Debug compileConstant: type => %d // val => %d\n",currentToken->lineNo, constValue->type, constValue->intValue);
-      } else {
+      } else if (constValue->type == TP_DOUBLE){
         constValue->doubleValue = - constValue->doubleValue;
-        if (DEBUG == 1) printf("Line %d: Debug compileConstant: type => %d // val => %f\n",currentToken->lineNo, constValue->type, constValue->doubleValue);
       }
       break;
     case TK_CHAR:
       eat(TK_CHAR);
       constValue = makeCharConstant(currentToken->string[0]);
-      if (DEBUG == 1) printf("Line %d: Debug compileConstant: type => %d // val => %c\n",currentToken->lineNo, constValue->type, constValue->charValue);
       break;
-    case TK_STRING:
+    case TK_STRING:                              // TODO:3x
       eat(TK_STRING);
-      constValue = makeStringConstant(currentToken->string); 
-      if (DEBUG == 1) printf("Line %d: Debug compileConstant: type => %d // val => %s\n",currentToken->lineNo, constValue->type, constValue->stringValue);   
+      constValue = makeStringConstant(currentToken->string);
       break;
     default:
       constValue = compileConstant2();
@@ -316,36 +265,35 @@ ConstantValue* compileConstant(void) {
   }
   return constValue;
 }
-// TODO:GK1
+
 ConstantValue* compileConstant2(void) {
   ConstantValue* constValue;
   Object* obj;
 
   switch (lookAhead->tokenType) {
-  case TK_NUMBER:
-    eat(TK_NUMBER);
-    constValue = makeIntConstant(currentToken->value);
-    break;
-  case TK_DOUBLE:     // Them keyword moi
-    eat(TK_DOUBLE);
-    constValue = makeDoubleConstant(currentToken->dvalue);
-    break;
-  case TK_IDENT:
-    eat(TK_IDENT);
-    obj = checkDeclaredConstant(currentToken->string);
-    if (obj->constAttrs->value->type == TP_INT || obj->constAttrs->value->type == TP_DOUBLE)
-      constValue = duplicateConstantValue(obj->constAttrs->value);
-    else
-      error(ERR_UNDECLARED_INT_CONSTANT,currentToken->lineNo, currentToken->colNo);
-    break;
-  default:
-    error(ERR_INVALID_CONSTANT, lookAhead->lineNo, lookAhead->colNo);
-    break;
+    case TK_NUMBER:
+      eat(TK_NUMBER);
+      constValue = makeIntConstant(currentToken->value);
+      break;
+    case TK_DOUBLE:           // TODO:3x
+      eat(TK_DOUBLE);
+      constValue = makeDoubleConstant(currentToken->dvalue);
+      break;
+    case TK_IDENT:
+      eat(TK_IDENT);
+      obj = checkDeclaredConstant(currentToken->string);
+      if (obj->constAttrs->value->type == TP_INT)
+        constValue = duplicateConstantValue(obj->constAttrs->value);
+      else
+        error(ERR_UNDECLARED_INT_CONSTANT,currentToken->lineNo, currentToken->colNo);
+      break;
+    default:
+      error(ERR_INVALID_CONSTANT, lookAhead->lineNo, lookAhead->colNo);
+      break;
   }
   return constValue;
 }
 
-// TODO:GK1
 Type* compileType(void) {
   Type* type;
   Type* elementType;
@@ -353,71 +301,69 @@ Type* compileType(void) {
   Object* obj;
 
   switch (lookAhead->tokenType) {
-  case KW_INTEGER: 
-    eat(KW_INTEGER);
-    type =  makeIntType();
-    break;
-  case KW_CHAR: 
-    eat(KW_CHAR); 
-    type = makeCharType();
-    break;
-  case KW_STRING:         // GK1: Them 2 keyword moi
-    eat(KW_STRING); 
-    type = makeStringType();
-    break;
-  case KW_DOUBLE:        // GK1: Them 2 keyword moi
-    eat(KW_DOUBLE); 
-    type = makeDoubleType();
-    break;
-  //
-  case KW_ARRAY:
-    eat(KW_ARRAY);
-    eat(SB_LSEL);
-    eat(TK_NUMBER);
+    case KW_INTEGER: 
+      eat(KW_INTEGER);
+      type =  makeIntType();
+      break;
+    case KW_CHAR: 
+      eat(KW_CHAR); 
+      type = makeCharType();
+      break;
+    case KW_DOUBLE:                   // TODO:3x 
+      eat(KW_DOUBLE);
+      type =  makeDoubleType();
+      break;
+    case KW_STRING:                     // TODO:3x
+      eat(KW_STRING); 
+      type = makeStringType();
+      break;
+    case KW_ARRAY:
+      eat(KW_ARRAY);
+      eat(SB_LSEL);
+      eat(TK_NUMBER);
 
-    arraySize = currentToken->value;
+      arraySize = currentToken->value;
 
-    eat(SB_RSEL);
-    eat(KW_OF);
-    elementType = compileType();
-    type = makeArrayType(arraySize, elementType);
-    break;
-  case TK_IDENT:
-    eat(TK_IDENT);
-    obj = checkDeclaredType(currentToken->string);
-    type = duplicateType(obj->typeAttrs->actualType);
-    break;
-  default:
-    error(ERR_INVALID_TYPE, lookAhead->lineNo, lookAhead->colNo);
-    break;
+      eat(SB_RSEL);
+      eat(KW_OF);
+      elementType = compileType();
+      type = makeArrayType(arraySize, elementType);
+      break;
+    case TK_IDENT:
+      eat(TK_IDENT);
+      obj = checkDeclaredType(currentToken->string);
+      type = duplicateType(obj->typeAttrs->actualType);
+      break;
+    default:
+      error(ERR_INVALID_TYPE, lookAhead->lineNo, lookAhead->colNo);
+      break;
   }
   return type;
 }
 
-// TODO:GK1
 Type* compileBasicType(void) {
   Type* type;
 
   switch (lookAhead->tokenType) {
-  case KW_INTEGER: 
-    eat(KW_INTEGER); 
-    type = makeIntType();
-    break;
-  case KW_CHAR: 
-    eat(KW_CHAR); 
-    type = makeCharType();
-    break; 
-  case KW_STRING:         // GK1: make them StringType 
-    eat(KW_STRING); 
-    type = makeStringType();
-    break;
-  case KW_DOUBLE:         // GK1: make them DoubleType 
-    eat(KW_DOUBLE); 
-    type = makeDoubleType();
-    break;
-  default:
-    error(ERR_INVALID_BASICTYPE, lookAhead->lineNo, lookAhead->colNo);
-    break;
+    case KW_INTEGER: 
+      eat(KW_INTEGER); 
+      type = makeIntType();
+      break;
+    case KW_CHAR: 
+      eat(KW_CHAR); 
+      type = makeCharType();
+      break;
+    case KW_DOUBLE:                   // TODO:3x
+      eat(KW_DOUBLE); 
+      type = makeDoubleType();
+      break;
+    case KW_STRING:                   // TODO:3x
+      eat(KW_STRING); 
+      type = makeStringType();
+      break;
+    default:
+      error(ERR_INVALID_BASICTYPE, lookAhead->lineNo, lookAhead->colNo);
+      break;
   }
   return type;
 }
@@ -469,7 +415,6 @@ void compileStatements(void) {
   }
 }
 
-// TODO:GK2
 void compileStatement(void) {
   switch (lookAhead->tokenType) {
   case TK_IDENT:
@@ -490,9 +435,7 @@ void compileStatement(void) {
   case KW_FOR:
     compileForSt();
     break;
-  case KW_DO:
-    compileDoWhileSt();
-  case KW_SWITCH:           // TODO:2
+     case KW_SWITCH:           // TODO:2
       compileSwitchSt();
       break;
   case KW_BREAK:            // TODO:2
@@ -502,9 +445,8 @@ void compileStatement(void) {
   case SB_SEMICOLON:
   case KW_END:
   case KW_ELSE:
-  
     break;
-
+    // Error occurs
   default:
     error(ERR_INVALID_STATEMENT, lookAhead->lineNo, lookAhead->colNo);
     break;
@@ -516,7 +458,6 @@ Type* compileLValue(void) {
   Type* varType;
 
   eat(TK_IDENT);
-  if(DEBUG == 3) printf("Line %d: Debug compileLValue: ident => %s\n",currentToken->lineNo, currentToken->string);
   var = checkDeclaredLValueIdent(currentToken->string);
   if (var->kind == OBJ_VARIABLE){
     if(var->varAttrs->type->typeClass == TP_ARRAY){
@@ -533,65 +474,12 @@ Type* compileLValue(void) {
   return varType;
 }
 
-void compileAssignSt(void) {
+void compileAssignSt(void) {                
   Type* type = compileLValue();
   eat(SB_ASSIGN);
   Type* typeExp = compileExpression();
-  checkTypeEquality(type, typeExp);
+  checkTypeAssign(type, typeExp);       // So sanh kieu 2 ben cua phep gan
 }
-
-// TODO:GK3
-// Ham modify: x, y, … , z  := <Expression>, <Expression>, … , <Expression> 
-// AssignST ::= VariableFunctions SB_ASSIGN Expressions
-// VariableFunction ::= Variable
-// VariableFunction ::= FunctionIdent
-// VariableFunctions ::= VariableFunction SB_COMMA VariableFunctions
-// VariableFunctions ::= VariableFunction
-// Expressions ::= Expression SB_COMMA Expressions
-// Expressions ::= Expression
-// TODO:GK3 => sua lai ham
-// void compileAssignSt(void) {    // BNF 56m
-//   TypeNode* listTypeVars;
-//   listTypeVars = compileListLVars();
-//   eat(SB_ASSIGN);
-//   TypeNode* listTypeExps;
-//   listTypeExps = compileListRExps();
-//   checkMultiTypeAssignment(listTypeVars, listTypeExps);     // So sanh kieu du lieu 2 ben co ep kieu
-//   // freeTypeNode(listTypeVars);
-//   // freeTypeNode(listTypeExps);
-// }
-// TODO:GK3
-// TypeNode* compileListLVars() {
-//   if(DEBUG == 3) printf("Line %d: Debug compileListLVars!\n", currentToken->lineNo);
-//   TypeNode* types = NULL;
-//   Type* type;
-  
-//   do {
-//     if (lookAhead->tokenType == SB_COMMA) eat(SB_COMMA);
-//     type  = compileLValue();
-//     addType(&types, type);
-//     if (DEBUG == 3) printf("Line %d: Debug left variable in assignment: type => %d\n", currentToken->lineNo, type->typeClass);
-//   } while (lookAhead->tokenType == SB_COMMA);
-
-//   return types;
-// } 
-// // TODO:GK3
-// TypeNode* compileListRExps() {
-//   if(DEBUG == 3) printf("Line %d: Debug compileListRExps!\n", currentToken->lineNo);
-//   TypeNode* types = NULL;
-//   Type* type;
-//   do {
-//     if (lookAhead->tokenType == SB_COMMA) eat(SB_COMMA);
-//     type  = compileExpression();
-//     addType(&types, type);
-//     if (DEBUG == 3) printf("Line %d: Debug right value in assignment: type => %d\n", currentToken->lineNo, type->typeClass);
-//   } while (lookAhead->tokenType == SB_COMMA);
-
-//   return types;
-// }
-
-
-
 
 void compileCallSt(void) {
   Object* proc;
@@ -631,49 +519,38 @@ void compileWhileSt(void) {
   compileStatement();
 }
 
-void compileForSt(void) {
+void compileForSt(void) {  
   eat(KW_FOR);
 
-  // check if the identifier is a variable
   Type *varType = compileLValue();
 
   eat(SB_ASSIGN);
   Type* type1 = compileExpression();
-  checkTypeEquality(varType, type1);    // Check type trong phep gan 1 for => so sanh bang
+  checkTypeEquality(varType, type1);          // Check kieu cua bien chay index
 
   eat(KW_TO);
   Type* type2 = compileExpression();
-  checkBasicType(type2);
-  checkTypeEquality(varType, type2);    // Check type trong phep gan 2 to  => so sanh bang
+  checkBasicType(type2);                      
+  checkTypeEquality(varType, type2);          // Check kieu cua bien chay index
 
   eat(KW_DO);
   compileStatement();
-}
-
-// TODO:GK2
-void compileDoWhileSt(void) {
-  if(DEBUG == 2) printf("Line %d: Debug start parse do-while statement!\n", currentToken->lineNo);
-  eat(KW_DO);
-  if(DEBUG == 2) printf("Line %d: Ate KW_DO\n", currentToken->lineNo);
-  compileStatement();
-  eat(KW_WHILE);
-  if(DEBUG == 2) printf("Line %d: Ate KW_WHILE\n", currentToken->lineNo);
-  compileCondition();
-  if(DEBUG == 2) printf("Line %d: Debug end parse do-while statement!\n", currentToken->lineNo);
 }
 
 void compileArgument(Object* param) {
+  
   Type* type;
   if(param->paramAttrs->kind == PARAM_VALUE){
     type = compileExpression();
-    checkTypeEquality(type, param->paramAttrs->type);   // Check Type du lieu vao cua function, procedure => so sanh bang
+    checkTypeAssign(param->paramAttrs->type, type);    // TODO:3x Kiem tra kieu du lieu truyen vao param
   } else {
     type = compileLValue();
-    checkTypeEquality(type, param->paramAttrs->type);   // Check Type du lieu vao cua function, procedure => so sanh bang
+    checkTypeAssign(param->paramAttrs->type, type);     // TODO:3x Kiem tra kieu du lieu truyen vao param
   }
 }
 
 void compileArguments(ObjectNode* paramList) {
+  
   ObjectNode* node = paramList;
   switch (lookAhead->tokenType) {
     case SB_LPAR:
@@ -682,6 +559,7 @@ void compileArguments(ObjectNode* paramList) {
         error(ERR_PARAMETERS_ARGUMENTS_INCONSISTENCY, currentToken->colNo, currentToken->lineNo);
       } 
       compileArgument(node->object);
+      
       while (lookAhead->tokenType == SB_COMMA) {
         eat(SB_COMMA);
         node = node->next;
@@ -719,63 +597,60 @@ void compileArguments(ObjectNode* paramList) {
   }
 }
 
-
-// TODO:GK1
-void compileCondition(void) {     // Kiem tra kieu cua 1 phep gan du lieu
+void compileCondition(void) {
+  
   Type* lhs = compileExpression();
   checkBasicType(lhs);
 
   switch (lookAhead->tokenType) {
-  case SB_EQ:
-    eat(SB_EQ);
-    break;
-  case SB_NEQ:
-    eat(SB_NEQ);
-    break;
-  case SB_LE:
-    eat(SB_LE);
-    break;
-  case SB_LT:
-    eat(SB_LT);
-    break;
-  case SB_GE:
-    eat(SB_GE);
-    break;
-  case SB_GT:
-    eat(SB_GT);
-    break;
-  default:
-    error(ERR_INVALID_COMPARATOR, lookAhead->lineNo, lookAhead->colNo);
+    case SB_EQ:
+      eat(SB_EQ);
+      break;
+    case SB_NEQ:
+      eat(SB_NEQ);
+      break;
+    case SB_LE:
+      eat(SB_LE);
+      break;
+    case SB_LT:
+      eat(SB_LT);
+      break;
+    case SB_GE:
+      eat(SB_GE);
+      break;
+    case SB_GT:
+      eat(SB_GT);
+      break;
+    default:
+      error(ERR_INVALID_COMPARATOR, lookAhead->lineNo, lookAhead->colNo);
   }
 
-  Type* rhs = compileExpression();
-  checkBasicType(rhs);
-  checkTypeEquality(lhs, rhs);      // Check type cua 2 bieu thuc so sanh => So sanh bang
+  Type* rsh = compileExpression();
+  checkBasicType(rsh);              
+  checkTypeExpression(lhs, rsh);            // Kiem tra kieu du lieu 2 bien giong nhau ko
 }
 
-// TODO:GK1
 Type* compileExpression(void) {
   Type* type;
   
   switch (lookAhead->tokenType) {
-  case SB_PLUS:
-    eat(SB_PLUS);
-    type = compileExpression2();
-    checkNumberType(type);        // GK1: Check truong hop phep + co phai la kieu so
-    break;
-  case SB_MINUS:
-    eat(SB_MINUS);
-    type = compileExpression2();
-    checkNumberType(type);      // GK1: Check truong hop phep - co phai la kieu so
-    break;
-  default:
-    type = compileExpression2();
+    case SB_PLUS:
+      eat(SB_PLUS);
+      type = compileExpression2();
+      checkBasicType(type);                // TODO:3x
+      break;
+    case SB_MINUS:
+      eat(SB_MINUS);
+      type = compileExpression2();
+      checkNumberType(type);              // TODO:3x
+      break;
+    default:
+      type = compileExpression2();
   }
   return type;
 }
 
-// TODO:GK3 => Sua de check cong dc cac kieu bien
-Type* compileExpression2(void) {  // GK1: Kiem tra type cua 1 phep +-*/
+Type* compileExpression2(void) {
   Type* type1;
   Type* type2;
 
@@ -783,13 +658,12 @@ Type* compileExpression2(void) {  // GK1: Kiem tra type cua 1 phep +-*/
   type2 = compileExpression3();
   if (type2 == NULL) return type1;
   else {
-    checkTypeInExpression(type1, type2);      // Check type cua phep +-*/ => So sanh ko bang
-    return type1;
+    checkTypeExpression(type1,type2);       // TODO:3x  Kiem tra kieu du lieu cua 2 bien +-*/
+    return priorityType(type1,type2);       // TODO:3x
   }
 }
 
-// TODO:GK1
-// TODO:GK2
+
 Type* compileExpression3(void) {
   Type* type1;
   Type* type2;
@@ -798,23 +672,23 @@ Type* compileExpression3(void) {
     case SB_PLUS:
       eat(SB_PLUS);
       type1 = compileTerm();
-      checkNumberType(type1);
-      
+      checkBasicType(type1);             // TODO:3x
       type2 = compileExpression3();
       if (type2 != NULL) {
-        checkNumberType(type2);
-      }
-      return type1;
+        checkBasicType(type2);           // TODO:3x
+        return priorityType(type1,type2);
+      } else return type1;
+      break;
     case SB_MINUS:
       eat(SB_MINUS);
       type1 = compileTerm();
-      checkNumberType(type1);
-    
+      checkNumberType(type1);             // TODO:3x
       type2 = compileExpression3();
       if (type2 != NULL) {
-        checkNumberType(type2);
-      }
-      return type1;
+        checkBasicType(type2);           // TODO:3x
+        return priorityType(type1,type2);
+      } else return type1;
+      break;
       // check the FOLLOW set
     case KW_TO:
     case KW_DO:
@@ -825,57 +699,92 @@ Type* compileExpression3(void) {
     case SB_LE:
     case SB_LT:
     case SB_GE:
+    case SB_GT:
     case SB_RSEL:
     case SB_SEMICOLON:
     case KW_END:
     case KW_ELSE:
     case KW_THEN:
-    case KW_SWITCH:
-    case KW_WHILE:        // GK2
-     case KW_BREAK:      // TODO:2
+    case KW_BREAK:      // TODO:2
     case KW_CASE:       // TODO:2
     case KW_DEFAULT:    // TODO:2
     case KW_BEGIN:      // TODO:2
       return NULL;
+      break;
     default:
       error(ERR_INVALID_EXPRESSION, lookAhead->lineNo, lookAhead->colNo);
       return NULL;
   }
 }
+void compileSwitchSt(void){
+  eat(KW_SWITCH);
+  compileExpression();
+  eat(KW_BEGIN);
+  while(lookAhead->tokenType != KW_END) {
+   
+    switch(lookAhead->tokenType) {
+      case KW_CASE:
+        eat(KW_CASE);
+        switch (lookAhead->tokenType) {
+          case TK_NUMBER:
+            eat(TK_NUMBER);
+            break;
+          case TK_CHAR:
+            eat(TK_CHAR);
+            break;
+          default:
+            error(ERR_INVALID_CONSTANT, lookAhead->lineNo, lookAhead->colNo);
+        }
+ 
+        eat(SB_COLON);
+        compileStatements();
+        if(lookAhead->tokenType == KW_BREAK) {
+          eat(KW_BREAK);  
+        }  
+        break;
+      case KW_DEFAULT:
+          printf("DDDEE\n");
+          eat(KW_DEFAULT);
+          eat(SB_COLON);
+          compileStatements();
+          break;
+      default: 
+        
+        error(ERR_INVALID_STATEMENT, lookAhead->lineNo, lookAhead->colNo);
+        break;
+    }
 
-// TODO:GK1   
-Type* compileTerm(void) {     // GK1: Check kieu du lieu cua phan truoc ve */
+  }
+  eat(KW_END);
+}
+
+Type* compileTerm(void) {
   Type* type;
 
   type = compileFactor();
-  checkBasicType(type);
-  
+  checkBasicType(type);                   // TODO:3x
   compileTerm2();
 
   return type;
 }
 
-// TODO:GK1
-// TODO:GK2
-void compileTerm2(void) {     // GK1: Check kieu du lieu 
+void compileTerm2(void) {
   Type* type;
 
   switch (lookAhead->tokenType) {
     case SB_TIMES:
       eat(SB_TIMES);
       type = compileFactor();
-      checkNumberType(type);
-
+      checkNumberType(type);              // TODO:3x
       compileTerm2();
       break;
     case SB_SLASH:
       eat(SB_SLASH);
       type = compileFactor();
-      checkNumberType(type);
-
+      checkNumberType(type);              // TODO:3x
       compileTerm2();
       break;
-    case SB_EXP:
+    case SB_EXP:             //todo 1
       eat(SB_EXP);
       type = compileFactor();
       checkNumberType(type);
@@ -899,91 +808,89 @@ void compileTerm2(void) {     // GK1: Check kieu du lieu
     case SB_SEMICOLON:
     case KW_END:
     case KW_ELSE:
-    case KW_THEN:
-    case KW_SWITCH:
-    case KW_WHILE:      // GK2
-     case KW_BREAK:      // TODO:2
+    case KW_THEN:  
+    case KW_BREAK:      // TODO:2
     case KW_CASE:       // TODO:2
     case KW_DEFAULT:    // TODO:2
     case KW_BEGIN:      // TODO:2
-      break;
+    break;
     default:
       error(ERR_INVALID_TERM, lookAhead->lineNo, lookAhead->colNo);
   }
 }
 
-// TODO:GK1
 Type* compileFactor(void) {
 
   Object* obj;
   Type* type;
 
   switch (lookAhead->tokenType) {
-  case TK_NUMBER:
-    eat(TK_NUMBER);
-    type = intType;
-    break;
-  case TK_CHAR:
-    eat(TK_CHAR);
-    type = charType;
-    break;
-  
-  case TK_STRING:            // GK1: Check token double
-    eat(TK_STRING);
-    type = stringType;
-    break;
+    case TK_NUMBER:
+      eat(TK_NUMBER);
+      type = intType;
+      break;
+    case TK_DOUBLE:             // TODO:3x
+      eat(TK_DOUBLE);
+      type = doubleType;
+      break;
+    case TK_CHAR:
+      eat(TK_CHAR);
+      type = charType;
+      break;
+    case TK_STRING:             // TODO:3x
+      eat(TK_STRING);
+      type = stringType;
+      break;
+    case TK_IDENT:
+      eat(TK_IDENT);
+      // check if the identifier is declared
+      obj = checkDeclaredIdent(currentToken->string);
 
-  case TK_DOUBLE:           // GK1: Check token double
-    eat(TK_DOUBLE);
-    type = doubleType;
-    break;
-
-  case TK_IDENT:
-    eat(TK_IDENT);
-    obj = checkDeclaredIdent(currentToken->string);
-
-    switch (obj->kind) {
-    case OBJ_CONSTANT:
-      if(obj->constAttrs->value->type == TP_INT){
-        type = intType;
-      } else if(obj->constAttrs->value->type == TP_CHAR){
-        type = charType;
-      } else if(obj->constAttrs->value->type == TP_DOUBLE){   //GK1
-        type = doubleType;
-      } else if(obj->constAttrs->value->type == TP_STRING){   // GK1
+      switch (obj->kind) {
+        case OBJ_CONSTANT:
+          if(obj->constAttrs->value->type == TP_INT){
+            type = intType;
+          } else if(obj->constAttrs->value->type == TP_CHAR){
+            type = charType;
+          } else if(obj->constAttrs->value->type == TP_DOUBLE){       // TODO:3x
+            type = doubleType;
+          } else if(obj->constAttrs->value->type == TP_STRING){       // TODO:3x
+            type = stringType;
+          }
+          break;
+        case OBJ_VARIABLE:
+          if(obj->varAttrs->type->typeClass == TP_ARRAY){
+            type = compileIndexes(obj->varAttrs->type);
+          } else {
+            type = obj->varAttrs->type;
+          }
+          break;
+        case OBJ_PARAMETER:
+          type = obj->paramAttrs->type;
+          break;
+        case OBJ_FUNCTION:
+          compileArguments(obj->funcAttrs->paramList);
+          type = obj->funcAttrs->returnType;
+          break;
+        default: 
+          error(ERR_INVALID_FACTOR,currentToken->lineNo, currentToken->colNo);
+          break;
       }
       break;
-    case OBJ_VARIABLE:
-      if(obj->varAttrs->type->typeClass == TP_ARRAY){
-        type = compileIndexes(obj->varAttrs->type);
-      } else {
-        type = obj->varAttrs->type;
-      }
-      break;
-    case OBJ_PARAMETER:
-      type = obj->paramAttrs->type;
-      break;
-    case OBJ_FUNCTION:
-      compileArguments(obj->funcAttrs->paramList);
-      type = obj->funcAttrs->returnType;
-      break;
-    default: 
-      error(ERR_INVALID_FACTOR,currentToken->lineNo, currentToken->colNo);
-      break;
-    }
-    break;
-     case SB_LPAR:
+       case SB_LPAR:
       eat(SB_LPAR);
       type = compileExpression();
       eat(SB_RPAR);
-      break;
-  default:
-    error(ERR_INVALID_FACTOR, lookAhead->lineNo, lookAhead->colNo);
+      break;     //todo:1
+    default:
+      error(ERR_INVALID_FACTOR, lookAhead->lineNo, lookAhead->colNo);
   }
+  
   return type;
 }
 
 Type* compileIndexes(Type* arrayType) {
+
   Type* type;
   while (lookAhead->tokenType == SB_LSEL) {
     eat(SB_LSEL);

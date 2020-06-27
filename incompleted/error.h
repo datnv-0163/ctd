@@ -8,8 +8,6 @@
 #define __ERROR_H__
 #include "token.h"
 
-// TODO:GK1
-// TODO:GK3 
 typedef enum {
   ERR_END_OF_COMMENT,
   ERR_IDENT_TOO_LONG,
@@ -40,8 +38,7 @@ typedef enum {
   ERR_DUPLICATE_IDENT,
   ERR_TYPE_INCONSISTENCY,
   ERR_PARAMETERS_ARGUMENTS_INCONSISTENCY,
-  ERR_INVALID_DOUBLE,
-  ERR_ASSIGN_MULTI_VAR
+  ERR_INVALID_DOUBLE                        // TODO:3x
 } ErrorCode;
 
 void error(ErrorCode err, int lineNo, int colNo);

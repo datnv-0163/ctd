@@ -4,7 +4,6 @@
  * @version 1.0
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "semantics.h"
@@ -96,15 +95,15 @@ Object* checkDeclaredLValueIdent(char* name) {
     error(ERR_UNDECLARED_IDENT,currentToken->lineNo, currentToken->colNo);
 
   switch (obj->kind) {
-    case OBJ_VARIABLE:
-    case OBJ_PARAMETER:
-      break;
-    case OBJ_FUNCTION:
-      if (obj != symtab->currentScope->owner) 
-        error(ERR_INVALID_IDENT,currentToken->lineNo, currentToken->colNo);
-      break;
-    default:
+  case OBJ_VARIABLE:
+  case OBJ_PARAMETER:
+    break;
+  case OBJ_FUNCTION:
+    if (obj != symtab->currentScope->owner) 
       error(ERR_INVALID_IDENT,currentToken->lineNo, currentToken->colNo);
+    break;
+  default:
+    error(ERR_INVALID_IDENT,currentToken->lineNo, currentToken->colNo);
   }
 
   return obj;
@@ -119,8 +118,17 @@ void checkIntType(Type* type) {
   }
 }
 
+// TODO:3x
+void checkNumberType(Type* type) {
+  if(type != NULL && (type->typeClass == TP_INT || type->typeClass == TP_DOUBLE)) {
+    return;
+  } else {
+    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
+  }
+}
 
 void checkCharType(Type* type) {
+  // TODO
   if(type != NULL && type->typeClass == TP_CHAR) {
     return;
   } else {
@@ -128,34 +136,19 @@ void checkCharType(Type* type) {
   }
 }
 
-// TODO:GK1
-void checkStringType(Type* type) {      // Them ham check kieu du lieu string
+// TODO:3x
+void checkStringType(Type* type) {
+  // TODO
   if(type != NULL && type->typeClass == TP_STRING) {
     return;
   } else {
     error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
   }
 }
-// TODO:GK1 
-void checkDoubleType(Type* type) {    // Them ham check kieu du lieu double
-  if(type != NULL && type->typeClass == TP_DOUBLE) {
-    return;
-  } else {
-    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
-  }
-}
-// TODO:GK1
-void checkNumberType(Type* type) {  // THem ham check kieu du lieu là int or double
-  if(type != NULL && (type->typeClass == TP_DOUBLE || type->typeClass == TP_INT)) {
-    return;
-  } else {
-    error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
-  }
-}
 
-// TODO:GK1
-void checkBasicType(Type* type) {   // Sửa hàm check thêm 2 kiểu dữ liệu mới
-  if(type != NULL && (type->typeClass == TP_INT || type->typeClass == TP_CHAR || type->typeClass == TP_STRING || type->typeClass == TP_DOUBLE)) {
+void checkBasicType(Type* type) {
+  // TODO:3x
+  if(type != NULL && (type->typeClass == TP_INT || type->typeClass == TP_CHAR || type->typeClass == TP_DOUBLE || type->typeClass == TP_STRING)) {
     return;
   } else {
     error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
@@ -170,42 +163,20 @@ void checkArrayType(Type* type) {
   }
 }
 
-void checkTypeEquality(Type* type1, Type* type2) {      // check 2 type is equal
+void checkTypeEquality(Type* type1, Type* type2) {
   if(compareType(type1, type2) == 0) {
     error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
   }
 }
 
-// TODO:GK3
-void checkTypeInAssignment(Type* type1, Type* type2) {  //Check 2 type in left and right of assignment
-  if(compareTypeInAssignment(type1, type2) == 0) {
+void checkTypeAssign(Type* type1, Type* type2) {
+  if(compareTypeAssign(type1, type2) == 0) {
     error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
   }
 }
 
-// TODO:GK3
-void checkMultiTypeAssignment(TypeNode* list1, TypeNode* list2){      // Kiem tra gan ep kieu
-  int size1 = countTypeNode(list1);
-  int size2 = countTypeNode(list2);
-  if (size1 != size2) {
-    error(ERR_ASSIGN_MULTI_VAR, currentToken->lineNo, currentToken->colNo);
-  } 
-
-  TypeNode* l1 = list1;
-  TypeNode* l2 = list2;
-
-  while (l1 != NULL && l2 != NULL) {
-    if(compareTypeInAssignment(l1->type, l2->type) == 0) {
-      error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
-    }
-    l1 = l1->next;
-    l2 = l2->next;
-  }
-}
-
-// TODO:GK3   
-void checkTypeInExpression(Type* type1, Type* type2) {       // So sanh 2 kieu co the cong duoc
-  if(compareTypeInExpression(type1, type2) == 0) {
+void checkTypeExpression(Type* type1, Type* type2) {
+  if(compareTypeExpression(type1, type2) == 0) {
     error(ERR_TYPE_INCONSISTENCY, currentToken->lineNo, currentToken->colNo);
   }
 }

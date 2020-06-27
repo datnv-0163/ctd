@@ -1,0 +1,18 @@
+Program Example2; 
+
+const x = -.022;
+      y = "hello world";
+      z = 'a';
+      w = 4;
+
+Var a : Integer;
+    b : Double;
+    c : String;
+    d : Char;
+
+Begin
+  a := 10;
+  b := 10.2;
+
+  d := 'a';
+End. 

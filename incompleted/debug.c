@@ -20,14 +20,12 @@ void printType(Type* type) {
   case TP_CHAR:
     printf("Char");
     break;
-  // TODO:GK1 => Them vao 2 ham in kieu du lieu moi
-  case TP_DOUBLE:
+  case TP_DOUBLE:             // TODO:3x
     printf("Double");
     break;
-  case TP_STRING:
+  case TP_STRING:             // TODO:3x
     printf("String");
     break;
-  //
   case TP_ARRAY:
     printf("Arr(%d,",type->arraySize);
     printType(type->elementType);
@@ -36,7 +34,6 @@ void printType(Type* type) {
   }
 }
 
-// TODO:GK1
 void printConstantValue(ConstantValue* value) {
   switch (value->type) {
   case TP_INT:
@@ -45,13 +42,12 @@ void printConstantValue(ConstantValue* value) {
   case TP_CHAR:
     printf("\'%c\'",value->charValue);
     break;
-  case TP_STRING:                       // GK1
-    printf("\"%s\"", value->stringValue);
-    break;
-  case TP_DOUBLE:                      // GK1
+  case TP_DOUBLE:                             // TODO:3x
     printf("%f",value->doubleValue);
     break;
-
+  case TP_STRING:                             // TODO:3x
+    printf("\"%s\"",value->stringValue);
+    break;
   default:
     break;
   }

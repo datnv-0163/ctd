@@ -18,9 +18,8 @@ void freeReferenceList(ObjectNode *objList);
 SymTab* symtab;
 Type* intType;
 Type* charType;
-// TODO:GK1
-Type* stringType;   // GK1: Thêm khởi tạo stringType sử dụng trong parse.c
-Type* doubleType;   // GK1: Thêm khởi tạo doubleType sử dụng trong parse.c
+Type* stringType;         // TODO:3x
+Type* doubleType;         // TODO:3x
 
 /******************* Type utilities ******************************/
 
@@ -35,18 +34,18 @@ Type* makeCharType(void) {
   type->typeClass = TP_CHAR;
   return type;
 }
-// TODO:GK1
-Type* makeStringType(void) {        // GK1: Tạo hàm makeStringType
-  Type* type = (Type*) malloc(sizeof(Type));
-  type->typeClass = TP_STRING;
-  return type;
-}
-Type* makeDoubleType(void) {        // GK1: Tạo hàm makeDoubleType
+// TODO:3x
+Type* makeDoubleType(void) {
   Type* type = (Type*) malloc(sizeof(Type));
   type->typeClass = TP_DOUBLE;
   return type;
 }
-
+// TODO:3x
+Type* makeStringType(void) {
+  Type* type = (Type*) malloc(sizeof(Type));
+  type->typeClass = TP_STRING;
+  return type;
+}
 
 Type* makeArrayType(int arraySize, Type* elementType) {
   Type* type = (Type*) malloc(sizeof(Type));
@@ -65,38 +64,30 @@ Type* duplicateType(Type* type) {
   }
   return resultType;
 }
-
+ // TODO:3x
+Type* priorityType(Type* type1, Type* type2) {
+  if (type1->typeClass == type2->typeClass) {
+    if(type1->typeClass == TP_CHAR) return makeStringType();
+    return type1;
+  } else {
+    if (type1->typeClass == TP_DOUBLE || type1->typeClass == TP_STRING) {
+      return type1; 
+    } else return type2;
+  } 
+}
 
 int compareType(Type* type1, Type* type2) {
-  if(DEBUG == 1) printf("Debug compareType: type1 => %d // type2 => %d\n", type1->typeClass, type2->typeClass);
   if (type1->typeClass == type2->typeClass) {
     if (type1->typeClass == TP_ARRAY) {
       if (type1->arraySize == type2->arraySize)
-	      return compareType(type1->elementType, type2->elementType);
+	return compareType(type1->elementType, type2->elementType);
       else return 0;
     } else return 1;
-  } else return 0; 
+  } else return 0;
 }
 
-// TODO:GK3 
-int compareTypeInAssignment(Type* type1, Type* type2) {
-  if(DEBUG == 3) printf("Debug compareTypeInAssignment: type1 => %d // type2 => %d\n", type1->typeClass, type2->typeClass);
-  if (type1->typeClass == type2->typeClass) {
-    if (type1->typeClass == TP_ARRAY) {
-      if (type1->arraySize == type2->arraySize)
-	      return compareType(type1->elementType, type2->elementType);
-      else return 0;
-    } else return 1;
-  } else {
-    if((type1->typeClass == TP_DOUBLE && type2->typeClass == TP_INT)) {
-      return 1;
-    } else return 0;
-  }
-  
-}
-// TODO:GK3
-int compareTypeInExpression(Type* type1, Type* type2) {
-  if(DEBUG == 3) printf("Debug compareTypeInExpression: type1 => %d // type2 => %d\n", type1->typeClass, type2->typeClass);
+// TODO:3x
+int compareTypeAssign(Type* type1, Type* type2) {
   if (type1->typeClass == type2->typeClass) {
     if (type1->typeClass == TP_ARRAY) {
       if (type1->arraySize == type2->arraySize)
@@ -104,28 +95,42 @@ int compareTypeInExpression(Type* type1, Type* type2) {
       else return 0;
     } else return 1;
   } else {
-    if((type1->typeClass == TP_DOUBLE && type2->typeClass == TP_INT) || (type1->typeClass == TP_INT && type2->typeClass == TP_DOUBLE)) {
+    if ((type1->typeClass == TP_DOUBLE && type2->typeClass == TP_INT) || (type1->typeClass == TP_STRING && type2->typeClass == TP_CHAR)) {
       return 1;
     } else return 0;
-  }
-  
+  } 
 }
 
+// TODO:3x
+int compareTypeExpression(Type* type1, Type* type2) {
+  if (type1->typeClass == type2->typeClass) {
+    if (type1->typeClass == TP_ARRAY) {
+      if (type1->arraySize == type2->arraySize)
+	      return compareType(type1->elementType, type2->elementType);
+      else return 0;
+    } else return 1;
+  } else {
+    if ((type1->typeClass == TP_DOUBLE && type2->typeClass == TP_INT) || (type1->typeClass == TP_INT && type2->typeClass == TP_DOUBLE) ) {
+      return 1;
+    } else if ((type1->typeClass == TP_STRING && type2->typeClass == TP_CHAR) || (type1->typeClass == TP_CHAR && type2->typeClass == TP_STRING)) {
+      return 1;
+    } else return 0;
+  } 
+}
 
-// TODO:GK1
 void freeType(Type* type) {
   switch (type->typeClass) {
-    case TP_INT:
-    case TP_CHAR:
-    case TP_STRING:         // GK1: Free thêm 2 kiểu dữ liệu mới
-    case TP_DOUBLE:         // GK1: Free thêm 2 kiểu dữ liệu mới
-      free(type);
-      break;
-    case TP_ARRAY:
-      freeType(type->elementType);
-      freeType(type);
-      break;
-    }
+  case TP_INT:
+  case TP_CHAR:
+  case TP_DOUBLE:           // TODO:3x
+  case TP_STRING:           // TODO:3x
+    free(type);
+    break;
+  case TP_ARRAY:
+    freeType(type->elementType);
+    freeType(type);
+    break;
+  }
 }
 
 /******************* Constant utility ******************************/
@@ -144,46 +149,33 @@ ConstantValue* makeCharConstant(char ch) {
   return value;
 }
 
-// TODO:GK1
-ConstantValue* makeStringConstant(char str[MAX_LENGTH]) {    // GK1: MakeStringConstant
-  ConstantValue* value = (ConstantValue*) malloc(sizeof(ConstantValue));
-  value->type = TP_STRING;
-  strcpy(value->stringValue, str);
-  if(DEBUG == 1) printf("Debug makeStringConstant: param => %s // constantValue => %s\n", str, value->stringValue);
-  return value;
-}
-// TODO:GK1
-ConstantValue* makeDoubleConstant(double d) {     // GK1: MakeDoubleConstant
-  
+// TODO:3x
+ConstantValue* makeDoubleConstant(double d) {
   ConstantValue* value = (ConstantValue*) malloc(sizeof(ConstantValue));
   value->type = TP_DOUBLE;
   value->doubleValue = d;
-  if(DEBUG == 1) printf("Debug makeDoubleConstant: param => %f // constantValue => %f\n", d, value->doubleValue);
+  return value;
+}
+// TODO:3x
+ConstantValue* makeStringConstant(char str[MAX_LENGTH_STR]) {
+  ConstantValue* value = (ConstantValue*) malloc(sizeof(ConstantValue));
+  value->type = TP_STRING;
+  strcpy(value->stringValue, str);
   return value;
 }
 
-
-// TODO:GK1
-ConstantValue* duplicateConstantValue(ConstantValue* v) {   // GK1: Xu ly duplicate 2 kieu du lieu moi
+ConstantValue* duplicateConstantValue(ConstantValue* v) {
   ConstantValue* value = (ConstantValue*) malloc(sizeof(ConstantValue));
   value->type = v->type;
   if (v->type == TP_INT) {
     value->intValue = v->intValue;
-    if(DEBUG == 1) printf("Debug duplicateConstantValue: param => %d // dup => %d\n", v->intValue, value->intValue);
-  }
-  else if (v->type == TP_CHAR) {
+  } else if (v->type == TP_DOUBLE) {       // TODO:3x
+    value->doubleValue = v->doubleValue;    
+  } else if (v->type == TP_CHAR) {
     value->charValue = v->charValue;
-    if(DEBUG == 1) printf("Debug duplicateConstantValue: param => %c // dup => %c\n", v->charValue, value->charValue);
-  }
-  else if (v->type == TP_STRING) {
+  } else if (v->type == TP_STRING) {      // TODO:3x
     strcpy(value->stringValue, v->stringValue);
-    if(DEBUG == 1) printf("Debug duplicateConstantValue: param => %s // dup => %s\n", v->stringValue, value->stringValue);
   }
-  else {
-    value->doubleValue = v->doubleValue;
-    if(DEBUG == 1) printf("Debug duplicateConstantValue: param => %f // dup => %f\n", v->doubleValue, value->doubleValue);
-  }
-    
   return value;
 }
 
@@ -339,45 +331,6 @@ void addObject(ObjectNode **objList, Object* obj) {
   }
 }
 
-// TODO:GK3
-void addType(TypeNode** typeList, Type* type) {
-  TypeNode* node = (TypeNode*) malloc(sizeof(TypeNode));
-  node->type = type;
-  node->next = NULL;
-  if ((*typeList) == NULL) {
-    *typeList = node;
-  } else {
-    TypeNode *l = *typeList;
-    while (l->next != NULL) 
-      l = l->next;
-    l->next = node;
-  }
-}
-// TODO:GK3
-void freeTypeNode(TypeNode *typeList) {
-  TypeNode* list = typeList;
-
-  while (list != NULL) {
-    TypeNode* node = list;
-    list = list->next;
-    freeType(node->type);
-    free(node);
-  }
-}
-
-// TODO:GK3
-int countTypeNode(TypeNode *typeList) {
-  TypeNode* list = typeList;
-  int count = 0;
-  while (list != NULL) {
-    count++;
-    list = list->next;
-  }
-
-  return count;
-}
-
-
 Object* findObject(ObjectNode *objList, char *name) {
   while (objList != NULL) {
     if (strcmp(objList->object->name, name) == 0) 
@@ -404,6 +357,15 @@ void initSymTab(void) {
   obj->funcAttrs->returnType = makeIntType();
   addObject(&(symtab->globalObjectList), obj);
 
+  // TODO:3x
+  obj = createFunctionObject("READD");
+  obj->funcAttrs->returnType = makeDoubleType();
+  addObject(&(symtab->globalObjectList), obj);
+  // TODO:3x
+  obj = createFunctionObject("READS");
+  obj->funcAttrs->returnType = makeStringType();
+  addObject(&(symtab->globalObjectList), obj);
+
   obj = createProcedureObject("WRITEI");
   param = createParameterObject("i", PARAM_VALUE, obj);
   param->paramAttrs->type = makeIntType();
@@ -416,26 +378,36 @@ void initSymTab(void) {
   addObject(&(obj->procAttrs->paramList),param);
   addObject(&(symtab->globalObjectList), obj);
 
-  obj = createProcedureObject("WRITELN");
+  // TODO:3x
+  obj = createProcedureObject("WRITED");
+  param = createParameterObject("d", PARAM_VALUE, obj);
+  param->paramAttrs->type = makeDoubleType();
+  addObject(&(obj->procAttrs->paramList),param);
+  addObject(&(symtab->globalObjectList), obj);
+
+  // TODO:3x
+  obj = createProcedureObject("WRITES");
+  param = createParameterObject("str", PARAM_VALUE, obj);
+  param->paramAttrs->type = makeStringType();
+  addObject(&(obj->procAttrs->paramList),param);
   addObject(&(symtab->globalObjectList), obj);
 
 
+  obj = createProcedureObject("WRITELN");
+  addObject(&(symtab->globalObjectList), obj);
+
   intType = makeIntType();
   charType = makeCharType();
-// TODO:GK1
-  stringType = makeStringType();      // GK1: khoi tạo stringType
-  doubleType = makeDoubleType();      // GK1: khoi tao doubleType
+  doubleType = makeDoubleType();        // TODO:3x
+  stringType = makeStringType();        // TODO:3x
 }
 
-// TODO:GK1
 void cleanSymTab(void) {
   freeObject(symtab->program);
   freeObjectList(symtab->globalObjectList);
   free(symtab);
   freeType(intType);
   freeType(charType);
-  freeType(stringType);         // GK1: Free stringType
-  freeType(doubleType);         // GK1: Free doubleType
 }
 
 void enterBlock(Scope* scope) {

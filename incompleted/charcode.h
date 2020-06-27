@@ -7,8 +7,6 @@
 #ifndef __CHARCODE_H__
 #define __CHARCODE_H__
 
-
-// Các charCode này dùng trong việc xử lý đọc từng kí tự trong file KPL 
 typedef enum {
   CHAR_SPACE,
   CHAR_LETTER,
@@ -26,6 +24,7 @@ typedef enum {
   CHAR_COLON,
   CHAR_SEMICOLON,
   CHAR_SINGLEQUOTE,
+  CHAR_DOUBLEQUOTE,       // TODO:3x
   CHAR_LPAR,
   CHAR_RPAR,
   CHAR_UNKNOWN

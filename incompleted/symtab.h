@@ -6,17 +6,16 @@
 
 #ifndef __SYMTAB_H__
 #define __SYMTAB_H__
-#define MAX_LENGTH 255
+#define MAX_LENGTH_STR 255
 
 #include "token.h"
 
-// TODO:GK1
 enum TypeClass {
   TP_INT,
   TP_CHAR,
   TP_ARRAY,
-  TP_STRING,        // GK1: Thêm vào 2 TypeClass cho 2 kiêu dữ liệu mới
-  TP_DOUBLE         // GK1: Thêm vào 2 TypeClass cho 2 kiêu dữ liệu mới
+  TP_DOUBLE,           // TODO:3x
+  TP_STRING            // TODO:3x
 };
 
 enum ObjectKind {
@@ -43,22 +42,14 @@ struct Type_ {
 typedef struct Type_ Type;
 typedef struct Type_ BasicType;
 
-// TODO:GK3
-struct TypeNode_ {
-  Type *type;
-  struct TypeNode_ *next;
-};
 
-typedef struct TypeNode_ TypeNode;
-
-// TODO:GK1
 struct ConstantValue_ {
   enum TypeClass type;
   union {
     int intValue;
     char charValue;
-    char stringValue[MAX_LENGTH];    // GK1: Lưu constantValue kiểu string
-    double doubleValue;   // GK1: Lưu constantValue kiểu double
+    double doubleValue;                     // TODO:3x
+    char stringValue[MAX_LENGTH_STR];       // TODO:3x
   };
 };
 
@@ -151,25 +142,20 @@ typedef struct SymTab_ SymTab;
 
 Type* makeIntType(void);
 Type* makeCharType(void);
-// TODO:GK1
-Type* makeStringType(void);     // GK1: Bổ sung thêm 2 hàm mới vào file symtab.c
-Type* makeDoubleType(void);     // GK1: Bổ sung thêm 2 hàm mới vào file symtab.c
-
+Type* makeDoubleType(void);                 // TODO:3x
+Type* makeStringType(void);                 // TODO:3x
 Type* makeArrayType(int arraySize, Type* elementType);
 Type* duplicateType(Type* type);
+Type* priorityType(Type* type1, Type* type2);         //  TODO:3x
 int compareType(Type* type1, Type* type2);
-// TODO:GK3
-int compareTypeInExpression(Type* type1, Type* type2);
-int compareTypeInAssignment(Type* type1, Type* type2);
-
+int compareTypeAssign(Type* type1, Type* type2);     // TODO:3x
+int compareTypeExpression(Type* type1, Type* type2);     // TODO:3x
 void freeType(Type* type);
 
 ConstantValue* makeIntConstant(int i);
 ConstantValue* makeCharConstant(char ch);
-// TODO:GK1
-ConstantValue* makeStringConstant(char str[MAX_LENGTH]);   // GK1: Bổ sung thêm hàm makeString
-ConstantValue* makeDoubleConstant(double d);    // GK1: Bổ sung thêm hàm makeDouble
-
+ConstantValue* makeDoubleConstant(double d);          // TODO:3x
+ConstantValue* makeStringConstant(char str[MAX_LENGTH_STR]);    // TODO:3x
 ConstantValue* duplicateConstantValue(ConstantValue* v);
 
 Scope* createScope(Object* owner, Scope* outer);
@@ -189,10 +175,5 @@ void cleanSymTab(void);
 void enterBlock(Scope* scope);
 void exitBlock(void);
 void declareObject(Object* obj);
-
-// TODO:GK3
-void addType(TypeNode** typeList, Type* type);
-void freeTypeNode(TypeNode* typeList);
-int countTypeNode(TypeNode* typeList);
 
 #endif
